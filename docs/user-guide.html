@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fastmail TUI - Interactive User Guide</title>
+  <style>
+    :root {
+      --primary: #00D4FF;
+      --secondary: #9945FF;
+      --background: #0A0A0F;
+      --panel-bg: #12121A;
+      --foreground: #E0E0E0;
+      --success: #00FF88;
+      --error: #FF4444;
+      --warning: #FFB800;
+      --border: #2A2A3A;
+      --highlight: rgba(0, 212, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      background: var(--background);
+      color: var(--foreground);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(153, 69, 255, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, var(--panel-bg) 0%, rgba(0, 212, 255, 0.1) 100%);
+      border-bottom: 1px solid var(--primary);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), var(--primary), transparent);
+      animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--primary);
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+
+    /* Navigation */
+    nav {
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    nav ul {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: var(--foreground);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: var(--highlight);
+    }
+
+    /* Main content */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    section {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: border-color 0.3s ease;
+    }
+
+    section:hover {
+      border-color: var(--primary);
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h2::before {
+      content: '>';
+      color: var(--secondary);
+    }
+
+    h3 {
+      color: var(--secondary);
+      margin: 1.5rem 0 1rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    /* Code blocks */
+    pre, code {
+      font-family: inherit;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    code {
+      padding: 0.2rem 0.5rem;
+      color: var(--primary);
+    }
+
+    pre {
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    pre code {
+      border: none;
+      padding: 0;
+    }
+
+    /* Keyboard shortcuts */
+    .keyboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .key-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .key-item:hover {
+      border-color: var(--primary);
+      transform: translateX(5px);
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 0.75rem;
+      background: linear-gradient(135deg, var(--panel-bg), var(--background));
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      color: var(--primary);
+      font-weight: bold;
+      box-shadow: 0 2px 0 var(--border), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .key-desc {
+      color: var(--foreground);
+    }
+
+    /* Interactive demo */
+    .demo-container {
+      background: var(--background);
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .demo-header {
+      background: linear-gradient(90deg, var(--panel-bg), rgba(0, 212, 255, 0.1));
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .demo-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .demo-dot.red { background: var(--error); }
+    .demo-dot.yellow { background: var(--warning); }
+    .demo-dot.green { background: var(--success); }
+
+    .demo-title {
+      margin-left: 1rem;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+
+    .demo-content {
+      padding: 1rem;
+      font-size: 0.9rem;
+      min-height: 200px;
+    }
+
+    .demo-line {
+      padding: 0.25rem 0;
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .demo-line:nth-child(1) { animation-delay: 0.1s; }
+    .demo-line:nth-child(2) { animation-delay: 0.2s; }
+    .demo-line:nth-child(3) { animation-delay: 0.3s; }
+    .demo-line:nth-child(4) { animation-delay: 0.4s; }
+    .demo-line:nth-child(5) { animation-delay: 0.5s; }
+    .demo-line:nth-child(6) { animation-delay: 0.6s; }
+
+    .prompt { color: var(--success); }
+    .command { color: var(--primary); }
+    .output { color: var(--foreground); opacity: 0.8; }
+    .highlight-text { color: var(--secondary); }
+
+    /* Feature cards */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .feature-card {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-5px);
+    }
+
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-title {
+      color: var(--primary);
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Workflow steps */
+    .workflow {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .step:hover {
+      border-color: var(--primary);
+    }
+
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 50%;
+      color: var(--background);
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .step-content h4 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      margin: 1rem 0;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--foreground);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: var(--background);
+      border-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Password generator demo */
+    .password-demo {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .password-display {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .password-value {
+      flex: 1;
+      padding: 1rem;
+      background: var(--panel-bg);
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      font-size: 1.1rem;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+
+    .generate-btn {
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 4px;
+      color: var(--background);
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .generate-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+
+    .password-options {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .option-btn {
+      padding: 0.5rem 1rem;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--foreground);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .option-btn:hover, .option-btn.active {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Strength meter */
+    .strength-meter {
+      margin-top: 1rem;
+    }
+
+    .strength-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .strength-fill {
+      height: 100%;
+      transition: all 0.3s ease;
+      border-radius: 3px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--foreground);
+      opacity: 0.6;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      nav ul { gap: 1rem; }
+      main { padding: 1rem; }
+      section { padding: 1.5rem; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--background);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Fastmail TUI</h1>
+    <p class="subtitle">Privacy-focused, AI-enhanced terminal email client</p>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="#getting-started">Getting Started</a></li>
+      <li><a href="#keyboard">Keyboard Shortcuts</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#masked-emails">Masked Emails</a></li>
+      <li><a href="#ai">AI Integration</a></li>
+      <li><a href="#config">Configuration</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- Getting Started -->
+    <section id="getting-started">
+      <h2>Getting Started</h2>
+      <p>Fastmail TUI is a terminal-based email client designed for privacy, speed, and efficiency. Here's how to get started:</p>
+
+      <div class="workflow">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>Activate the Environment</h4>
+            <p>Open your terminal and activate the virtual environment:</p>
+            <pre><code>source ~/Documents/GitHub/fastmail-tui/venv/bin/activate</code></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>Run Setup</h4>
+            <p>Configure your Fastmail API token and optional Claude API key:</p>
+            <pre><code>fm setup</code></pre>
+            <p>Get your Fastmail API token from: Settings > Privacy & Security > Integrations > API Tokens</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4>Launch the TUI</h4>
+            <p>Start the email client:</p>
+            <pre><code>fm</code></pre>
+            <p>Or use the full command: <code>fastmail-tui</code></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-container">
+        <div class="demo-header">
+          <div class="demo-dot red"></div>
+          <div class="demo-dot yellow"></div>
+          <div class="demo-dot green"></div>
+          <span class="demo-title">Terminal - Fastmail TUI</span>
+        </div>
+        <div class="demo-content">
+          <div class="demo-line"><span class="prompt">$</span> <span class="command">fm</span></div>
+          <div class="demo-line"><span class="output">Starting Fastmail TUI...</span></div>
+          <div class="demo-line"><span class="highlight-text">Connecting to Fastmail...</span></div>
+          <div class="demo-line"><span class="output">Loaded 127 emails from Inbox</span></div>
+          <div class="demo-line"><span class="output">AI assistant ready</span></div>
+          <div class="demo-line"><span class="highlight-text">Press ? for help</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Keyboard Shortcuts -->
+    <section id="keyboard">
+      <h2>Keyboard Shortcuts</h2>
+      <p>Navigate like a pro with vim-style keyboard shortcuts:</p>
+
+      <div class="tabs">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="showTab('nav')">Navigation</button>
+          <button class="tab-btn" onclick="showTab('actions')">Actions</button>
+          <button class="tab-btn" onclick="showTab('compose')">Compose</button>
+          <button class="tab-btn" onclick="showTab('ai-keys')">AI</button>
+        </div>
+
+        <div id="nav" class="tab-content active">
+          <div class="keyboard-grid">
+            <div class="key-item">
+              <span class="key">j</span>
+              <span class="key-desc">Move down / Next email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">k</span>
+              <span class="key-desc">Move up / Previous email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">gg</span>
+              <span class="key-desc">Go to top of list</span>
+            </div>
+            <div class="key-item">
+              <span class="key">G</span>
+              <span class="key-desc">Go to bottom of list</span>
+            </div>
+            <div class="key-item">
+              <span class="key">Enter</span>
+              <span class="key-desc">Open selected email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">Esc</span>
+              <span class="key-desc">Go back / Close modal</span>
+            </div>
+            <div class="key-item">
+              <span class="key">/</span>
+              <span class="key-desc">Search emails</span>
+            </div>
+            <div class="key-item">
+              <span class="key">q</span>
+              <span class="key-desc">Quit application</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="actions" class="tab-content">
+          <div class="keyboard-grid">
+            <div class="key-item">
+              <span class="key">a</span>
+              <span class="key-desc">Archive email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">d</span>
+              <span class="key-desc">Delete email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">s</span>
+              <span class="key-desc">Star / Unstar email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">u</span>
+              <span class="key-desc">Mark as unread</span>
+            </div>
+            <div class="key-item">
+              <span class="key">m</span>
+              <span class="key-desc">Open Masked Email Manager</span>
+            </div>
+            <div class="key-item">
+              <span class="key">Ctrl+M</span>
+              <span class="key-desc">Quick create masked email</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="compose" class="tab-content">
+          <div class="keyboard-grid">
+            <div class="key-item">
+              <span class="key">c</span>
+              <span class="key-desc">Compose new email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">r</span>
+              <span class="key-desc">Reply to email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">R</span>
+              <span class="key-desc">Reply all</span>
+            </div>
+            <div class="key-item">
+              <span class="key">f</span>
+              <span class="key-desc">Forward email</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="ai-keys" class="tab-content">
+          <div class="keyboard-grid">
+            <div class="key-item">
+              <span class="key">Ctrl+S</span>
+              <span class="key-desc">AI Summarize email</span>
+            </div>
+            <div class="key-item">
+              <span class="key">Ctrl+R</span>
+              <span class="key-desc">AI Smart reply suggestions</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+      <h2>Features</h2>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-title">Privacy First</div>
+          <p>Secure keyring storage for credentials. Encrypted local cache. No data leaves your machine except to Fastmail.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Lightning Fast</div>
+          <p>Vim-style navigation. Keyboard-driven workflow. Minimal latency with smart caching.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <div class="feature-title">AI Enhanced</div>
+          <p>Claude-powered email summaries, smart reply suggestions, and automatic categorization.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎭</div>
+          <div class="feature-title">Masked Emails</div>
+          <p>Create disposable email addresses with secure passwords for every new website signup.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <div class="feature-title">IlluminatiNebula Theme</div>
+          <p>Stunning cyan and purple aesthetic. Terminal transparency support. Beautiful by default.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📧</div>
+          <div class="feature-title">Full Email Management</div>
+          <p>Read, compose, reply, forward, archive, delete. Everything you need in the terminal.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Masked Emails -->
+    <section id="masked-emails">
+      <h2>Masked Email Manager</h2>
+      <p>Create unique email addresses and secure passwords for every new website signup. Never use your real email again.</p>
+
+      <h3>How It Works</h3>
+      <div class="workflow">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>Press <code>m</code> to Open Manager</h4>
+            <p>Access the Masked Email Manager from anywhere in the app.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>Click "Create Login Credentials"</h4>
+            <p>Or press <code>n</code> to create new credentials.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4>Enter the Website Domain</h4>
+            <p>Example: <code>example.com</code>, <code>github.com</code></p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4>Copy Your Credentials</h4>
+            <p>A new masked email and secure 24-character password are generated instantly. Copy both to your password manager.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>Try the Password Generator</h3>
+      <div class="password-demo">
+        <div class="password-display">
+          <div class="password-value" id="password-output">Click Generate!</div>
+          <button class="generate-btn" onclick="generatePassword()">Generate</button>
+        </div>
+        <div class="password-options">
+          <button class="option-btn active" onclick="setPasswordType('secure', this)">Secure (24 chars)</button>
+          <button class="option-btn" onclick="setPasswordType('memorable', this)">Memorable</button>
+          <button class="option-btn" onclick="setPasswordType('long', this)">Extra Long (32 chars)</button>
+        </div>
+        <div class="strength-meter">
+          <span>Strength: <span id="strength-text">-</span></span>
+          <div class="strength-bar">
+            <div class="strength-fill" id="strength-fill" style="width: 0%; background: var(--border);"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>CLI Commands</h3>
+      <pre><code># Generate a secure password
+fm generate-password
+
+# Generate a memorable password (word-based)
+fm generate-password --memorable
+
+# Generate a longer password
+fm generate-password --length 32</code></pre>
+    </section>
+
+    <!-- AI Integration -->
+    <section id="ai">
+      <h2>AI Integration</h2>
+      <p>Powered by Claude, the AI features help you manage email more efficiently:</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <div class="feature-title">Email Summaries</div>
+          <p>Press <code>Ctrl+S</code> to get an instant summary of any email. Great for long threads.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <div class="feature-title">Smart Replies</div>
+          <p>Press <code>Ctrl+R</code> to get AI-suggested reply options. Choose one or use as inspiration.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🏷️</div>
+          <div class="feature-title">Auto-Categorization</div>
+          <p>Emails are automatically categorized: Work, Personal, Finance, Shopping, Social, Newsletter.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-title">Action Items</div>
+          <p>AI extracts action items and deadlines from emails and displays them in the sidebar.</p>
+        </div>
+      </div>
+
+      <h3>Setup Claude API</h3>
+      <p>To enable AI features, you'll need a Claude API key:</p>
+      <div class="workflow">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>Get API Key</h4>
+            <p>Visit <a href="https://console.anthropic.com" style="color: var(--primary);">console.anthropic.com</a> and create an API key.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>Run Setup</h4>
+            <pre><code>fm setup</code></pre>
+            <p>Enter your Claude API key when prompted.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Configuration -->
+    <section id="config">
+      <h2>Configuration</h2>
+      <p>Customize Fastmail TUI to your preferences.</p>
+
+      <h3>Config File Location</h3>
+      <pre><code>~/.config/fastmail-tui/config.yaml</code></pre>
+
+      <h3>Default Configuration</h3>
+      <pre><code>fastmail:
+  host: api.fastmail.com
+
+claude:
+  enabled: true
+  model: claude-sonnet-4-5
+
+cache:
+  enabled: true
+  max_messages: 500
+
+ui:
+  vim_mode: true
+  show_ai_panel: true
+  refresh_interval: 30
+  page_size: 50</code></pre>
+
+      <h3>CLI Configuration Commands</h3>
+      <pre><code># Enable/disable AI
+fm configure --enable-ai
+fm configure --disable-ai
+
+# Set refresh interval (seconds)
+fm configure --refresh-interval 60
+
+# Show config file path
+fm config-path
+
+# Clear all stored credentials
+fm clear-credentials</code></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>Fastmail TUI - Created by <a href="https://github.com/pdubbbbbs">Philip S. Wright</a></p>
+    <p>IlluminatiNebula Theme | MIT License</p>
+  </footer>
+
+  <script>
+    // Tab switching
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Password generator
+    let passwordType = 'secure';
+
+    function setPasswordType(type, btn) {
+      passwordType = type;
+      document.querySelectorAll('.password-options .option-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function generatePassword() {
+      let password;
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
+      const words = ['apple', 'banana', 'castle', 'dragon', 'eagle', 'forest', 'glacier', 'harbor', 'island', 'jungle', 'knight', 'lemon', 'mountain', 'nebula', 'ocean', 'phoenix', 'quartz', 'river', 'sunset', 'thunder', 'unicorn', 'valley', 'willow', 'xenon', 'yellow', 'zenith'];
+
+      if (passwordType === 'memorable') {
+        const selectedWords = [];
+        for (let i = 0; i < 4; i++) {
+          selectedWords.push(words[Math.floor(Math.random() * words.length)]);
+        }
+        password = selectedWords.join('-') + '-' + Math.floor(Math.random() * 100);
+      } else {
+        const length = passwordType === 'long' ? 32 : 24;
+        password = '';
+        for (let i = 0; i < length; i++) {
+          password += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+
+      document.getElementById('password-output').textContent = password;
+      updateStrength(password);
+    }
+
+    function updateStrength(password) {
+      let score = 0;
+      if (password.length >= 12) score++;
+      if (password.length >= 16) score++;
+      if (password.length >= 24) score++;
+      if (/[a-z]/.test(password)) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+      const strengthText = document.getElementById('strength-text');
+      const strengthFill = document.getElementById('strength-fill');
+
+      const percent = (score / 7) * 100;
+      let color, text;
+
+      if (score <= 2) { color = 'var(--error)'; text = 'Weak'; }
+      else if (score <= 4) { color = 'var(--warning)'; text = 'Good'; }
+      else { color = 'var(--success)'; text = 'Strong'; }
+
+      strengthText.textContent = text;
+      strengthFill.style.width = percent + '%';
+      strengthFill.style.background = color;
+    }
+
+    // Initialize with a generated password
+    generatePassword();
+  </script>
+</body>
+</html>
